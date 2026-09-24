@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      参考 dw-platform：业务工程 parent 继承 jeecg-boot-parent，
+      依赖版本由父 POM dependencyManagement 管理，子模块不写 version。
+      3.9.5 groupId 为 org.jeecgframework.boot3（旧版 3.6.x 是 .boot）。
+    -->
+    <parent>
+        <groupId>org.jeecgframework.boot3</groupId>
+        <artifactId>jeecg-boot-parent</artifactId>
+        <version>3.9.5</version>
+        <relativePath>../JeecgBoot/jeecg-boot/pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.mall</groupId>
+    <artifactId>cloud-mall</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>cloud-mall</name>
+    <description>SaaS Mall：本地依赖 jeecg-boot 3.9.5，上层写业务；对接原版 jeecgboot-vue3</description>
+
+    <modules>
+        <module>mall-common</module>
+        <module>mall-modules</module>
+        <module>mall-web</module>
+    </modules>
+
+    <properties>
+        <mall.version>1.0.0</mall.version>
+        <jeecgboot.version>3.9.5</jeecgboot.version>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.mall</groupId>
+                <artifactId>mall-common</artifactId>
+                <version>${mall.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mall</groupId>
+                <artifactId>mall-modules</artifactId>
+                <version>${mall.version}</version>
+            </dependency>
+            <!-- 与 dw-platform 一样显式管理 system-biz，便于子模块直接引用 -->
+            <dependency>
+                <groupId>org.jeecgframework.boot3</groupId>
+                <artifactId>jeecg-system-biz</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>aliyun</id>
+            <name>aliyun Repository</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jeecg</id>
+            <name>jeecg Repository</name>
+            <url>https://maven.jeecg.com/nexus/content/repositories/jeecg</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+</project>

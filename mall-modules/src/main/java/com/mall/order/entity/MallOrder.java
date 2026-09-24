@@ -21,6 +21,8 @@ public class MallOrder implements Serializable {
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
     private String orderNo;
+    /** SALE=商城售卖订单 ACTIVATE=激活站兑换订单 */
+    private String orderType;
     private String userId;
     private String productId;
     private String productName;
@@ -31,6 +33,8 @@ public class MallOrder implements Serializable {
     private BigDecimal amount;
     private String status;
     private String installmentTip;
+    private Integer periods;
+    private Integer issuedPeriods;
     private String createBy;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

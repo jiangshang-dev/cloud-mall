@@ -43,7 +43,8 @@ public class MallCdkService extends ServiceImpl<MallCdkMapper, MallCdk> {
         if (cdk.getExpireTime() != null && cdk.getExpireTime().before(new Date())) {
             throw new JeecgBootException("卡密已过期");
         }
-        if (!MallCdkStatus.UNUSED.equals(cdk.getStatus())) {
+        if (!MallCdkStatus.UNUSED.equals(cdk.getStatus())
+                && !MallCdkStatus.RESERVED.equals(cdk.getStatus())) {
             throw new JeecgBootException("卡密不可用");
         }
         MallProduct product = productMapper.selectById(cdk.getProductId());
@@ -67,6 +68,20 @@ public class MallCdkService extends ServiceImpl<MallCdkMapper, MallCdk> {
 
     public int occupy(String code, String userId) {
         return baseMapper.occupy(code, userId);
+    }
+
+    public int reserveById(String id, String userId) {
+        return baseMapper.reserveById(id, userId);
+    }
+
+    /** 取一张未售库存卡密 */
+    public MallCdk pickUnused(String productId) {
+        return getOne(new LambdaQueryWrapper<MallCdk>()
+                .eq(MallCdk::getProductId, productId)
+                .eq(MallCdk::getStatus, MallCdkStatus.UNUSED)
+                .and(w -> w.isNull(MallCdk::getExpireTime).or().gt(MallCdk::getExpireTime, new Date()))
+                .orderByAsc(MallCdk::getCreateTime)
+                .last("LIMIT 1"), false);
     }
 
     @Transactional(rollbackFor = Exception.class)

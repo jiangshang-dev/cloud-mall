@@ -38,7 +38,20 @@ public class MallAdminController {
     @Operation(summary = "保存商品")
     @PostMapping("/product/save")
     public Result<String> saveProduct(@RequestBody MallProduct product) {
+        if (product.getPeriods() == null || product.getPeriods() < 1) {
+            product.setPeriods(1);
+        }
+        if (product.getRedeemUrl() == null || product.getRedeemUrl().isEmpty()) {
+            product.setRedeemUrl("http://127.0.0.1:5173/recharge");
+        }
+        if (product.getCategory() == null || product.getCategory().isEmpty()) {
+            product.setCategory("AI_SUB");
+        }
+        if (product.getStatus() == null || product.getStatus().isEmpty()) {
+            product.setStatus("ON");
+        }
         if (product.getId() == null || product.getId().isEmpty()) {
+            product.setId(null);
             product.setCreateTime(new Date());
             productMapper.insert(product);
         } else {

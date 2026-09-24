@@ -41,7 +41,7 @@
           placeholder="请输入卡密"
           allow-clear
         />
-        <p class="hint">支持 Plus、Go、5x、20x 和 Codex 额度卡密。演示可用：PLUS-DEMO-0001-AAAA</p>
+        <p class="hint">请粘贴商城订单详情里发放的卡密。也可从订单「使用说明」链接带参跳转。</p>
         <a-button type="primary" class="primary-btn" :loading="loading" @click="onVerify">
           验证卡密
         </a-button>
@@ -50,7 +50,7 @@
       <!-- Step 2 -->
       <div v-else-if="currentStep === 2" class="panel">
         <h2>读取登录状态</h2>
-        <p class="sub">读取本站账号登录状态（非第三方 ChatGPT 凭证）</p>
+        <p class="sub">读取本站账号登录状态。不收集、不使用 ChatGPT accessToken/session。</p>
         <div class="status-box">
           <div><b>状态：</b>{{ loginInfo.loggedIn ? '已登录' : '演示模式（未登录）' }}</div>
           <div><b>用户：</b>{{ loginInfo.username }}（{{ loginInfo.userId }}）</div>
@@ -115,10 +115,12 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { getDeliveryStatus, getLoginStatus, redeemCdk, verifyCdk } from '@/api/mall'
 
+const route = useRoute()
 const badges = ['安全加密', '极速到账', '7x24小时', '全自动化']
 const tabs = [
   { key: 'self', label: '自助充值' },
@@ -142,6 +144,12 @@ const loginInfo = reactive({
 const orderNo = ref('')
 const delivery = ref(null)
 let timer = null
+
+onMounted(() => {
+  if (route.query.code) {
+    code.value = String(route.query.code)
+  }
+})
 
 const progress = computed(() => delivery.value?.progress ?? 0)
 const progressStatus = computed(() => {

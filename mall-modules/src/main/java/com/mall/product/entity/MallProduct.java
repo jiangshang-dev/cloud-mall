@@ -25,8 +25,12 @@ public class MallProduct implements Serializable {
     private String category;
     private BigDecimal price;
     private Integer durationDays;
+    /** 分期发放期数（售卖后按期发卡密） */
+    private Integer periods;
     private String status;
     private String remark;
+    /** 激活站地址，订单详情里展示给用户 */
+    private String redeemUrl;
     private String createBy;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

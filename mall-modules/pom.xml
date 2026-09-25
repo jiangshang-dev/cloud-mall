@@ -10,8 +10,12 @@
     </parent>
 
     <artifactId>mall-modules</artifactId>
+    <packaging>pom</packaging>
     <name>mall-modules</name>
     <description>商城业务模块聚合：商品/订单/会员等业务写在这里（可按需拆子模块）</description>
+    <modules>
+        <module>mall-ai</module>
+    </modules>
 
     <dependencies>
         <dependency>

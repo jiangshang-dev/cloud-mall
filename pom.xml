@@ -27,6 +27,7 @@
         <module>mall-common</module>
         <module>mall-modules</module>
         <module>mall-web</module>
+        <module>mall-modules/mall-search</module>
     </modules>
 
     <properties>

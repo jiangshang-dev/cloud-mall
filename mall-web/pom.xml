@@ -40,6 +40,12 @@
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.mall</groupId>
+            <artifactId>mall-fondia</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -5,6 +5,20 @@
     <file url="file://$PROJECT_DIR$/mall-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mall-modules/mall-ai/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mall-modules/mall-ai/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-cuisine/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-cuisine/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-fondia/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-fondia/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-interaction/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-interaction/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-member/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-member/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-search/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-search/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-support/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-support/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-user/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mall-modules/mall-user/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mall-modules/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mall-modules/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mall-web/src/main/java" charset="UTF-8" />

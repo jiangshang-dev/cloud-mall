@@ -9,9 +9,9 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>mall-ai</artifactId>
+    <artifactId>mall-interaction</artifactId>
     <description>
-        AI智能推荐模块
+        互动评论模块
     </description>
 
     <properties>

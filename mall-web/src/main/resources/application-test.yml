@@ -161,6 +161,21 @@ spring:
       host: 127.0.0.1
       port: 6379
       password: ''
+  # RabbitMQ（菜谱索引同步）
+  rabbitmq:
+    host: 127.0.0.1
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: /
+    publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 1
+        max-concurrency: 1
+        prefetch: 1
+
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
@@ -372,6 +387,11 @@ logging:
     org.springframework.context.support.PostProcessorRegistrationDelegate: error
     org.flywaydb: debug
     org.jeecg.modules.system.mapper: info
+  # Elasticsearch（菜谱检索）
+  elasticsearch:
+    cluster-nodes: 127.0.0.1:9200
+    check-enabled: false
+
 #cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas
@@ -410,3 +430,42 @@ justauth:
     type: default
     prefix: 'demo::'
     timeout: 1h
+
+fondia:
+  payment:
+    internal-secret: dev-payment-internal
+    allow-client-confirm: true
+  aliyun-green:
+    enabled: false
+    access-key-id: ${ALIYUN_GREEN_AK:}
+    access-key-secret: ${ALIYUN_GREEN_SK:}
+    endpoint: green-cip.cn-shanghai.aliyuncs.com
+  agentscope:
+    agent-name: assistant
+    workspace: ./.fondiaAgent
+    llm:
+      base-url: ${LLM_BASE_URL:https://api.deepseek.com/v1}
+      model-name: ${LLM_MODEL_NAME:deepseek-chat}
+      api-key: ${LLM_API_KEY:}
+      stream: true
+    redis:
+      key-prefix: "jeecg-ai:session:"
+      host: 127.0.0.1
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+    memory:
+      compaction-enabled: true
+      compaction-trigger-messages: 30
+      compaction-keep-messages: 10
+    system:
+      chat:
+        classpath: config/agent-system-message.txt
+
+thirdparty:
+  huawei:
+    client-id: ${HUAWEI_CLIENT_ID:}
+    client-secret: ${HUAWEI_CLIENT_SECRET:}
+    redirect-uri: ${HUAWEI_REDIRECT_URI:}
+    token-url: https://oauth-login.cloud.huawei.com/oauth2/v3/token
+    dev-mode: true

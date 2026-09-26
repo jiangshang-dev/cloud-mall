@@ -1,7 +1,7 @@
 logging:
   level:
     org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
-    
+
 spring:
   main:
     # 启动加速 (建议开发环境)
@@ -9,6 +9,7 @@ spring:
   application:
     name: cloud-mall
   config:
+    # jeecg-aiflow 自带的 LiteFlow SQL 规则源，不引入则启动时报 rule-source-ext-data is empty
     import: optional:classpath:config/application-liteflow.yml
   profiles:
     active: '@profile.name@'

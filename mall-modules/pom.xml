@@ -12,20 +12,16 @@
     <artifactId>mall-modules</artifactId>
     <packaging>pom</packaging>
     <name>mall-modules</name>
+    <description>业务模块聚合（无 Controller；Controller 在 mall-web）</description>
 
     <modules>
-        <module>mall-ai</module>
-        <module>mall-cuisine</module>
-        <module>mall-interaction</module>
+        <module>mall-media</module>
         <module>mall-user</module>
-        <module>mall-support</module>
+        <module>mall-cuisine</module>
+        <module>mall-search</module>
+        <module>mall-ai</module>
+        <module>mall-interaction</module>
         <module>mall-member</module>
+        <module>mall-support</module>
     </modules>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.mall</groupId>
-            <artifactId>mall-common</artifactId>
-        </dependency>
-    </dependencies>
 </project>

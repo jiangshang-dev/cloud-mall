@@ -21,9 +21,6 @@ public class RecipeAdminDetailVO extends RecipeDetailVO {
     @Schema(description = "状态：0下架 1上架")
     private Integer status;
 
-    @Schema(description = "分类名称")
-    private String categoryName;
-
     @Schema(description = "标签ID列表")
     private List<Long> tagIds = new ArrayList<>();
 }

@@ -14,6 +14,10 @@ import org.jeecg.modules.support.entity.FdCsMessage;
 import org.jeecg.modules.support.entity.FdCsSession;
 import com.mall.common.constant.CsSenderType;
 import com.mall.common.constant.CsSessionStatus;
+import com.mall.common.util.IpUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.jeecg.modules.support.mapper.FdCsMessageMapper;
 import org.jeecg.modules.support.mapper.FdCsSessionMapper;
 import org.jeecg.modules.support.service.IFdCsConfigService;
@@ -85,6 +89,7 @@ public class FdCsSessionServiceImpl extends ServiceImpl<FdCsSessionMapper, FdCsS
             session = createSession(userId, channel, CsSessionStatus.WAITING);
         } else {
             session.setStatus(CsSessionStatus.WAITING);
+            rememberClient(session);
             updateById(session);
         }
         insertHumanGreeting(session, config);
@@ -104,6 +109,8 @@ public class FdCsSessionServiceImpl extends ServiceImpl<FdCsSessionMapper, FdCsS
         if (session == null) {
             return null;
         }
+        rememberClient(session);
+        updateById(session);
         FdCsConfig config = configService.getConfigEntity();
         return toSessionVO(session, config.getHumanGreeting());
     }
@@ -205,6 +212,7 @@ public class FdCsSessionServiceImpl extends ServiceImpl<FdCsSessionMapper, FdCsS
                 session.getId(), CsSenderType.USER, String.valueOf(userId), content, clientMsgId);
         session.setLastMessage(trimSummary(content));
         session.setLastMessageTime(System.currentTimeMillis());
+        rememberClient(session);
         if (session.getAgentId() != null) {
             session.setAgentUnread((session.getAgentUnread() == null ? 0 : session.getAgentUnread()) + 1);
             messageService.pushToAgent(saved, session.getAgentId());
@@ -251,6 +259,8 @@ public class FdCsSessionServiceImpl extends ServiceImpl<FdCsSessionMapper, FdCsS
         vo.setAgentId(session.getAgentId());
         vo.setStatus(session.getStatus());
         vo.setSource(session.getSource());
+        vo.setClientIp(session.getClientIp());
+        vo.setDeviceInfo(session.getDeviceInfo());
         vo.setLastMessage(session.getLastMessage());
         vo.setLastMessageTime(session.getLastMessageTime());
         vo.setUserUnread(session.getUserUnread());
@@ -322,8 +332,24 @@ public class FdCsSessionServiceImpl extends ServiceImpl<FdCsSessionMapper, FdCsS
                 .setAgentUnread(0)
                 .setCreateTime(now)
                 .setLastMessageTime(now);
+        rememberClient(session);
         save(session);
         return session;
+    }
+
+    private void rememberClient(FdCsSession session) {
+        if (!(RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attrs)) {
+            return;
+        }
+        HttpServletRequest request = attrs.getRequest();
+        String ip = IpUtils.getIpAddr(request);
+        String device = IpUtils.getDeviceInfo(request);
+        if (oConvertUtils.isNotEmpty(ip)) {
+            session.setClientIp(ip.length() > 64 ? ip.substring(0, 64) : ip);
+        }
+        if (oConvertUtils.isNotEmpty(device)) {
+            session.setDeviceInfo(device);
+        }
     }
 
     private FdCsMessage insertHumanGreeting(FdCsSession session, FdCsConfig config) {

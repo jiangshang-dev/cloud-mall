@@ -19,7 +19,10 @@ public class FdRecipeStep extends FdCuisineBaseEntity {
     @Schema(description = "步骤序号")
     private Integer stepNo;
 
-    @Schema(description = "步骤图片")
+    @Schema(description = "步骤标题")
+    private String title;
+
+    @Schema(description = "步骤图片，多张用||分隔")
     private String image;
 
     @Schema(description = "步骤说明")

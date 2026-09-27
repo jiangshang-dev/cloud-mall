@@ -22,6 +22,9 @@ public class FdRecipeIngredient extends FdCuisineBaseEntity {
     @Schema(description = "用量")
     private String amount;
 
+    @Schema(description = "用量单位")
+    private String unit;
+
     @Schema(description = "食材图片")
     private String image;
 

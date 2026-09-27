@@ -7,9 +7,12 @@ import jakarta.annotation.Resource;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.modules.member.entity.FdMallOrder;
 import org.jeecg.modules.member.entity.FdMallProduct;
+import org.jeecg.common.exception.JeecgBootException;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.member.service.IMallAppService;
 import org.jeecg.modules.member.service.IMallRedeemAppService;
 import org.jeecg.modules.member.util.MemberAuthHelper;
+import org.jeecg.modules.member.vo.MallRedeemRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,11 +44,14 @@ public class MallAppController {
     @Operation(summary = "积分兑换")
     @PostMapping("/redeem")
     public Result<FdMallOrder> redeem(@RequestHeader("Authorization") String authorization,
-                                      @RequestParam Long productId,
-                                      @RequestParam(defaultValue = "1") Integer quantity,
-                                      @RequestParam(required = false) Long addressId) {
+                                      @RequestBody MallRedeemRequest body) {
         Long userId = authHelper.resolveUserId(authorization);
-        return Result.OK(redeemAppService.redeem(userId, productId, quantity, addressId));
+        if (body == null || oConvertUtils.isEmpty(body.getProductId())) {
+            throw new JeecgBootException("请选择商品");
+        }
+        Long productId = Long.valueOf(body.getProductId());
+        Long addressId = oConvertUtils.isEmpty(body.getAddressId()) ? null : Long.valueOf(body.getAddressId());
+        return Result.OK(redeemAppService.redeem(userId, productId, body.getQuantity(), addressId));
     }
 
     @Operation(summary = "我的兑换订单")

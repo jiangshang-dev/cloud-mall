@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS `fd_cs_session` (
   `agent_id` varchar(32) DEFAULT NULL COMMENT '接入客服sys_user.id',
   `status` varchar(20) NOT NULL DEFAULT 'AI' COMMENT 'AI/WAITING/CHATTING/CLOSED',
   `source` varchar(30) DEFAULT 'general',
+  `client_ip` varchar(64) DEFAULT NULL COMMENT '客户端IP',
+  `device_info` varchar(200) DEFAULT NULL COMMENT '手机设备信息',
   `ai_conversation_id` varchar(64) DEFAULT NULL COMMENT 'Airag会话ID',
   `last_message` varchar(500) DEFAULT NULL,
   `last_message_time` bigint DEFAULT NULL,

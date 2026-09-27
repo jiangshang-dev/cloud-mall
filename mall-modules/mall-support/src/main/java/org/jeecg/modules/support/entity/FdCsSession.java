@@ -24,6 +24,8 @@ public class FdCsSession implements Serializable {
     private String agentId;
     private String status;
     private String source;
+    private String clientIp;
+    private String deviceInfo;
     private String aiConversationId;
     private String lastMessage;
     private Long lastMessageTime;

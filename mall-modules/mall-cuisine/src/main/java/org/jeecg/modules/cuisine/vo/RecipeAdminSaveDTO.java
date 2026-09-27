@@ -22,12 +22,17 @@ public class RecipeAdminSaveDTO {
     private String videoUrl;
     private Integer videoDuration;
     private Integer difficulty;
+    private String skillLevel;
     private Integer cookMinutes;
+    private String prepNote;
     private Integer calories;
+    private Integer showCalories;
     private String servingSize;
+    private String yieldCount;
     private Integer isRecommend;
     private Integer sortNo;
     private Integer status;
+    private Integer privateOnly;
 
     @Schema(description = "食材列表")
     private List<FdRecipeIngredient> ingredients = new ArrayList<>();
@@ -37,4 +42,7 @@ public class RecipeAdminSaveDTO {
 
     @Schema(description = "标签ID列表")
     private List<Long> tagIds = new ArrayList<>();
+
+    @Schema(description = "标签名列表，不存在时自动创建")
+    private List<String> tags = new ArrayList<>();
 }

@@ -42,14 +42,26 @@ public class FdRecipe extends FdCuisineBaseEntity {
     @Schema(description = "难度：1简单 2中等 3困难")
     private Integer difficulty;
 
+    @Schema(description = "操作难度，如容易做")
+    private String skillLevel;
+
     @Schema(description = "烹饪时长(分钟)")
     private Integer cookMinutes;
+
+    @Schema(description = "烹饪时长区间，如15~30分钟")
+    private String prepNote;
 
     @Schema(description = "热量(大卡/100克)")
     private Integer calories;
 
+    @Schema(description = "是否展示热量：0否 1是")
+    private Integer showCalories;
+
     @Schema(description = "份量说明")
     private String servingSize;
+
+    @Schema(description = "出品数量，如2份")
+    private String yieldCount;
 
     @Schema(description = "点赞数")
     private Integer likeCount;
@@ -71,6 +83,9 @@ public class FdRecipe extends FdCuisineBaseEntity {
 
     @Schema(description = "状态：0下架 1上架")
     private Integer status;
+
+    @Schema(description = "仅自己可见：0否 1是")
+    private Integer privateOnly;
 
     @Schema(description = "发布时间")
     private Date publishTime;

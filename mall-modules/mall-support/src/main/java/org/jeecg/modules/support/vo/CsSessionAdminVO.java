@@ -12,6 +12,8 @@ public class CsSessionAdminVO {
     private String agentId;
     private String status;
     private String source;
+    private String clientIp;
+    private String deviceInfo;
     private String lastMessage;
     private Long lastMessageTime;
     private Integer userUnread;

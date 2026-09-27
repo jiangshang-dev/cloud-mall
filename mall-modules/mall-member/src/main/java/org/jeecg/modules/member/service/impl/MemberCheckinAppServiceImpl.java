@@ -41,9 +41,29 @@ public class MemberCheckinAppServiceImpl implements IMemberCheckinAppService {
         LambdaQueryWrapper<FdCheckinRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FdCheckinRecord::getUserId, userId).eq(FdCheckinRecord::getCheckinDate, today);
         FdCheckinRecord record = recordService.getOne(wrapper, false);
+        int streakDays = 0;
+        int cycleDayIndex = 1;
+        if (record != null) {
+            streakDays = record.getStreakDays() == null ? 1 : record.getStreakDays();
+            cycleDayIndex = record.getCycleDayIndex() == null ? 1 : record.getCycleDayIndex();
+        } else {
+            LambdaQueryWrapper<FdCheckinRecord> yesterdayWrapper = new LambdaQueryWrapper<>();
+            yesterdayWrapper.eq(FdCheckinRecord::getUserId, userId)
+                    .eq(FdCheckinRecord::getCheckinDate, today.minusDays(1));
+            FdCheckinRecord yesterday = recordService.getOne(yesterdayWrapper, false);
+            streakDays = yesterday == null || yesterday.getStreakDays() == null ? 0 : yesterday.getStreakDays();
+            cycleDayIndex = (streakDays % 7) + 1;
+        }
+        List<FdCheckinConfig> configs = configService.list(new LambdaQueryWrapper<FdCheckinConfig>()
+                .eq(FdCheckinConfig::getStatus, 1)
+                .eq(FdCheckinConfig::getDayIndex, cycleDayIndex));
+        int todayReward = configs.isEmpty() || configs.get(0).getRewardPoints() == null ? 0 : configs.get(0).getRewardPoints();
         Map<String, Object> data = new HashMap<>();
         data.put("checkedIn", record != null);
         data.put("record", record);
+        data.put("streakDays", streakDays);
+        data.put("cycleDayIndex", cycleDayIndex);
+        data.put("todayReward", todayReward);
         return data;
     }
 

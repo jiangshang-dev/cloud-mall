@@ -14,6 +14,7 @@ import org.jeecg.modules.cuisine.entity.FdRecipe;
 import org.jeecg.modules.cuisine.entity.FdRecipeCategory;
 import org.jeecg.modules.cuisine.entity.FdRecipeIngredient;
 import org.jeecg.modules.cuisine.entity.FdRecipeStep;
+import org.jeecg.modules.cuisine.entity.FdRecipeTag;
 import org.jeecg.modules.cuisine.entity.FdRecipeTagRel;
 import org.jeecg.modules.cuisine.mapper.FdRecipeMapper;
 import org.jeecg.modules.cuisine.mapper.FdRecipeTagRelMapper;
@@ -27,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import jakarta.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,7 +79,12 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
     public RecipeDetailVO getRecipeDetail(Long recipeId) {
         FdRecipe recipe = getEnabledRecipe(recipeId);
         FdRecipeCategory cuisine = categoryService.getById(recipe.getCuisineId());
+        FdRecipeCategory category = categoryService.getById(recipe.getCategoryId());
         String storedVideo = recipe.getVideoUrl();
+        Integer duration = recipe.getVideoDuration();
+        if (duration == null || duration <= 0) {
+            duration = recipeVideoService.lookupDuration(storedVideo);
+        }
         return RecipeDetailVO.builder()
                 .id(recipe.getId())
                 .title(recipe.getTitle())
@@ -86,11 +94,16 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
                 .videoUrl(storedVideo)
                 .videoId(storedVideo)
                 .playUrl(recipeVideoService.resolvePlayUrl(storedVideo))
-                .videoDuration(recipe.getVideoDuration())
+                .videoDuration(duration)
                 .difficulty(recipe.getDifficulty())
+                .skillLevel(recipe.getSkillLevel())
                 .cookMinutes(recipe.getCookMinutes())
+                .prepNote(recipe.getPrepNote())
                 .calories(recipe.getCalories())
+                .showCalories(recipe.getShowCalories())
                 .servingSize(recipe.getServingSize())
+                .yieldCount(recipe.getYieldCount())
+                .privateOnly(recipe.getPrivateOnly())
                 .likeCount(recipe.getLikeCount())
                 .collectCount(recipe.getCollectCount())
                 .commentCount(recipe.getCommentCount())
@@ -98,6 +111,7 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
                 .cuisineId(recipe.getCuisineId())
                 .cuisineName(cuisine != null ? cuisine.getName() : null)
                 .categoryId(recipe.getCategoryId())
+                .categoryName(category != null ? category.getName() : null)
                 .tags(tagService.listTagNamesByRecipeId(recipeId))
                 .ingredients(ingredientService.listByRecipeId(recipeId))
                 .steps(stepService.listByRecipeId(recipeId))
@@ -114,6 +128,10 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         FdRecipeCategory cuisine = categoryService.getById(recipe.getCuisineId());
         FdRecipeCategory category = categoryService.getById(recipe.getCategoryId());
         String storedVideo = recipe.getVideoUrl();
+        Integer duration = recipe.getVideoDuration();
+        if (duration == null || duration <= 0) {
+            duration = recipeVideoService.lookupDuration(storedVideo);
+        }
         RecipeAdminDetailVO detail = new RecipeAdminDetailVO();
         detail.setId(recipe.getId());
         detail.setTitle(recipe.getTitle());
@@ -123,11 +141,16 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         detail.setVideoUrl(storedVideo);
         detail.setVideoId(storedVideo);
         detail.setPlayUrl(recipeVideoService.resolvePlayUrl(storedVideo));
-        detail.setVideoDuration(recipe.getVideoDuration());
+        detail.setVideoDuration(duration);
         detail.setDifficulty(recipe.getDifficulty());
+        detail.setSkillLevel(recipe.getSkillLevel());
         detail.setCookMinutes(recipe.getCookMinutes());
+        detail.setPrepNote(recipe.getPrepNote());
         detail.setCalories(recipe.getCalories());
+        detail.setShowCalories(recipe.getShowCalories());
         detail.setServingSize(recipe.getServingSize());
+        detail.setYieldCount(recipe.getYieldCount());
+        detail.setPrivateOnly(recipe.getPrivateOnly());
         detail.setLikeCount(recipe.getLikeCount());
         detail.setCollectCount(recipe.getCollectCount());
         detail.setCommentCount(recipe.getCommentCount());
@@ -177,15 +200,21 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         recipe.setSubtitle(dto.getSubtitle());
         recipe.setDescription(dto.getDescription());
         recipe.setCoverImage(dto.getCoverImage());
-        recipe.setVideoUrl(dto.getVideoUrl());
-        recipe.setVideoDuration(dto.getVideoDuration());
+        recipe.setVideoUrl(blankToNull(dto.getVideoUrl()));
+        Integer duration = dto.getVideoDuration();
+        recipe.setVideoDuration(duration != null && duration > 0 ? duration : null);
         recipe.setDifficulty(dto.getDifficulty());
+        recipe.setSkillLevel(blankToNull(dto.getSkillLevel()));
         recipe.setCookMinutes(dto.getCookMinutes());
+        recipe.setPrepNote(blankToNull(dto.getPrepNote()));
         recipe.setCalories(dto.getCalories());
+        recipe.setShowCalories(dto.getShowCalories() == null ? 0 : dto.getShowCalories());
         recipe.setServingSize(dto.getServingSize());
+        recipe.setYieldCount(blankToNull(dto.getYieldCount()));
         recipe.setIsRecommend(dto.getIsRecommend() == null ? 0 : dto.getIsRecommend());
         recipe.setSortNo(dto.getSortNo() == null ? 0 : dto.getSortNo());
         recipe.setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
+        recipe.setPrivateOnly(dto.getPrivateOnly() == null ? 0 : dto.getPrivateOnly());
         recipe.setUpdateTime(now);
         if (recipe.getStatus() == 1 && recipe.getPublishTime() == null) {
             recipe.setPublishTime(now);
@@ -198,13 +227,25 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         Long recipeId = recipe.getId();
         saveIngredients(recipeId, dto.getIngredients(), now);
         saveSteps(recipeId, dto.getSteps(), now);
-        saveTagRelations(recipeId, dto.getTagIds(), now);
+        saveTagRelations(recipeId, dto.getTagIds(), dto.getTags(), now);
+        Integer resolvedDuration = recipeVideoService.bindRecipeVideo(
+                recipe.getVideoUrl(), recipe.getTitle(), recipe.getDescription(), joinTags(dto.getTags()), recipe.getVideoDuration());
+        if (resolvedDuration != null && resolvedDuration > 0
+                && (recipe.getVideoDuration() == null || recipe.getVideoDuration() <= 0)) {
+            recipe.setVideoDuration(resolvedDuration);
+            updateById(recipe);
+        }
         publishRecipeSearchSync(recipeId);
         return recipeId;
     }
 
     @Override
     public void publishRecipeSearchSync(Long recipeId) {
+        FdRecipe current = getById(recipeId);
+        if (current != null && current.getPrivateOnly() != null && current.getPrivateOnly() == 1) {
+            removeRecipeFromSearch(recipeId);
+            return;
+        }
         RecipeSearchSyncMessage message = buildSearchSyncMessage(recipeId, RecipeSearchSyncMessage.ACTION_SAVE);
         if (message != null) {
             rabbitMqClient.sendMessage(RabbitConstant.SAVE_RECIPE, JSONUtil.toJsonStr(message));
@@ -298,8 +339,9 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
             }
             FdRecipeIngredient entity = new FdRecipeIngredient();
             entity.setRecipeId(recipeId);
-            entity.setName(item.getName());
-            entity.setAmount(item.getAmount());
+            entity.setName(item.getName().trim());
+            entity.setAmount(item.getAmount() == null ? "" : item.getAmount().trim());
+            entity.setUnit(blankToNull(item.getUnit()));
             entity.setImage(item.getImage());
             entity.setSortNo(item.getSortNo() != null ? item.getSortNo() : index);
             entity.setCreateTime(now);
@@ -317,15 +359,29 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         }
         int index = 0;
         for (FdRecipeStep item : steps) {
-            if (item == null || oConvertUtils.isEmpty(item.getContent())) {
+            if (item == null) {
+                continue;
+            }
+            String title = item.getTitle() == null ? "" : item.getTitle().trim();
+            String content = item.getContent() == null ? "" : item.getContent().trim();
+            String tip = item.getTip() == null ? "" : item.getTip().trim();
+            if (title.isEmpty() && !tip.isEmpty() && !tip.equals(content)) {
+                title = tip;
+                tip = "";
+            }
+            if (!title.isEmpty() && tip.equals(title)) {
+                tip = "";
+            }
+            if (title.isEmpty() && content.isEmpty() && oConvertUtils.isEmpty(item.getImage())) {
                 continue;
             }
             FdRecipeStep entity = new FdRecipeStep();
             entity.setRecipeId(recipeId);
             entity.setStepNo(item.getStepNo() != null ? item.getStepNo() : index + 1);
+            entity.setTitle(blankToNull(title));
             entity.setImage(item.getImage());
-            entity.setContent(item.getContent());
-            entity.setTip(item.getTip());
+            entity.setContent(content);
+            entity.setTip(blankToNull(tip));
             entity.setSortNo(item.getSortNo() != null ? item.getSortNo() : index);
             entity.setCreateTime(now);
             entity.setUpdateTime(now);
@@ -334,12 +390,28 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         }
     }
 
-    private void saveTagRelations(Long recipeId, List<Long> tagIds, Date now) {
+    private void saveTagRelations(Long recipeId, List<Long> tagIds, List<String> tagNames, Date now) {
         tagRelMapper.physicalDeleteByRecipeId(recipeId);
-        if (CollectionUtils.isEmpty(tagIds)) {
+        LinkedHashSet<Long> ids = new LinkedHashSet<>();
+        if (!CollectionUtils.isEmpty(tagIds)) {
+            for (Long tagId : tagIds) {
+                if (tagId != null) {
+                    ids.add(tagId);
+                }
+            }
+        }
+        if (!CollectionUtils.isEmpty(tagNames)) {
+            for (String name : tagNames) {
+                Long tagId = findOrCreateTag(name, now);
+                if (tagId != null) {
+                    ids.add(tagId);
+                }
+            }
+        }
+        if (ids.isEmpty()) {
             return;
         }
-        for (Long tagId : tagIds) {
+        for (Long tagId : ids) {
             if (tagId == null) {
                 continue;
             }
@@ -365,6 +437,7 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
                                                           Long tagId, String keyword) {
         LambdaQueryWrapper<FdRecipe> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FdRecipe::getStatus, 1);
+        wrapper.and(w -> w.eq(FdRecipe::getPrivateOnly, 0).or().isNull(FdRecipe::getPrivateOnly));
         if (cuisineId != null) {
             wrapper.eq(FdRecipe::getCuisineId, cuisineId);
         }
@@ -400,6 +473,52 @@ public class FdRecipeServiceImpl extends ServiceImpl<FdRecipeMapper, FdRecipe>
         }
         wrapper.orderByAsc(FdRecipe::getSortNo).orderByDesc(FdRecipe::getPublishTime);
         return wrapper;
+    }
+
+    private Long findOrCreateTag(String name, Date now) {
+        if (oConvertUtils.isEmpty(name)) {
+            return null;
+        }
+        String trimmed = name.trim();
+        if (trimmed.length() > 50) {
+            trimmed = trimmed.substring(0, 50);
+        }
+        FdRecipeTag existing = tagService.getOne(new LambdaQueryWrapper<FdRecipeTag>()
+                .eq(FdRecipeTag::getName, trimmed)
+                .last("LIMIT 1"));
+        if (existing != null) {
+            return existing.getId();
+        }
+        FdRecipeTag tag = new FdRecipeTag();
+        tag.setName(trimmed);
+        tag.setTagType("STYLE");
+        tag.setSortNo(0);
+        tag.setStatus(1);
+        tag.setCreateTime(now);
+        tag.setUpdateTime(now);
+        tagService.save(tag);
+        return tag.getId();
+    }
+
+    private String joinTags(List<String> tags) {
+        if (CollectionUtils.isEmpty(tags)) {
+            return null;
+        }
+        List<String> names = new ArrayList<>();
+        for (String tag : tags) {
+            if (oConvertUtils.isNotEmpty(tag)) {
+                names.add(tag.trim());
+            }
+        }
+        return names.isEmpty() ? null : String.join(",", names);
+    }
+
+    private String blankToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private FdRecipe getEnabledRecipe(Long recipeId) {

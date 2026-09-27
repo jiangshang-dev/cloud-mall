@@ -11,6 +11,8 @@ import org.jeecg.modules.member.entity.FdPointsLedger;
 import org.jeecg.modules.member.entity.FdPointsTask;
 import org.jeecg.modules.member.service.IPointsAppService;
 import org.jeecg.modules.member.util.MemberAuthHelper;
+import org.jeecg.modules.member.vo.PointsTaskCompleteRequest;
+import org.jeecg.modules.member.vo.PointsTaskProgressVO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,12 +51,20 @@ public class PointsAppController {
         return Result.OK(pointsAppService.listActiveTasks());
     }
 
+    @Operation(summary = "我的任务进度")
+    @GetMapping("/tasks/mine")
+    public Result<List<PointsTaskProgressVO>> myTasks(@RequestHeader("Authorization") String authorization) {
+        Long userId = authHelper.resolveUserId(authorization);
+        return Result.OK(pointsAppService.listMyTasks(userId));
+    }
+
     @Operation(summary = "完成任务领积分")
     @PostMapping("/task/complete")
     public Result<Map<String, Object>> completeTask(@RequestHeader("Authorization") String authorization,
-                                                     @RequestParam String taskCode,
-                                                     @RequestParam(required = false) String bizRef) {
+                                                     @RequestBody PointsTaskCompleteRequest body) {
         Long userId = authHelper.resolveUserId(authorization);
+        String taskCode = body == null ? null : body.getTaskCode();
+        String bizRef = body == null ? null : body.getBizRef();
         return Result.OK(pointsAppService.completeTask(userId, taskCode, bizRef));
     }
 }

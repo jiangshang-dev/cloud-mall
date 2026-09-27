@@ -2,7 +2,9 @@ package org.jeecg.modules.member.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.exception.JeecgBootException;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.member.entity.FdPointsTask;
 import org.jeecg.modules.member.entity.FdPointsTaskRecord;
 import org.jeecg.modules.member.service.IFdPointsTaskRecordService;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+@Slf4j
 @Service
 public class PointsTaskAppServiceImpl implements IPointsTaskAppService {
 
@@ -53,6 +56,16 @@ public class PointsTaskAppServiceImpl implements IPointsTaskAppService {
             }
         }
 
+        if (oConvertUtils.isNotEmpty(bizRef)) {
+            LambdaQueryWrapper<FdPointsTaskRecord> bizWrapper = new LambdaQueryWrapper<>();
+            bizWrapper.eq(FdPointsTaskRecord::getUserId, userId)
+                    .eq(FdPointsTaskRecord::getTaskId, task.getId())
+                    .eq(FdPointsTaskRecord::getBizRef, bizRef);
+            if (taskRecordService.count(bizWrapper) > 0) {
+                throw new JeecgBootException("该任务已发放");
+            }
+        }
+
         long now = System.currentTimeMillis();
         FdPointsTaskRecord record = new FdPointsTaskRecord();
         record.setUserId(userId);
@@ -65,5 +78,20 @@ public class PointsTaskAppServiceImpl implements IPointsTaskAppService {
         taskRecordService.save(record);
 
         return pointsCoreService.addPoints(userId, task.getRewardPoints(), "TASK", taskCode, task.getTitle());
+    }
+
+    @Override
+    public int tryReward(Long userId, String taskCode, String bizRef) {
+        if (userId == null || oConvertUtils.isEmpty(taskCode)) {
+            return 0;
+        }
+        try {
+            int before = pointsCoreService.getBalance(userId);
+            int after = completeTask(userId, taskCode, bizRef);
+            return Math.max(0, after - before);
+        } catch (JeecgBootException e) {
+            log.info("跳过积分任务 taskCode={} userId={} : {}", taskCode, userId, e.getMessage());
+            return 0;
+        }
     }
 }

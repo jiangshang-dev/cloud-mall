@@ -12,7 +12,6 @@ import org.jeecg.modules.user.vo.UploadFileVO;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.HandlerMapping;
 
 @Tag(name = "App文件")
@@ -27,11 +26,10 @@ public class AppFileController {
     @Operation(summary = "App文件上传")
     @PostMapping("/user/upload")
     public Result<UploadFileVO> upload(@RequestHeader("Authorization") String authorization,
+                                       @RequestParam("file") MultipartFile file,
+                                       @RequestParam(value = "biz", required = false) String bizPath,
                                        HttpServletRequest request) {
         userService.getUserInfo(authorization);
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-        MultipartFile file = multipartRequest.getFile("file");
-        String bizPath = request.getParameter("biz");
         return Result.ok(appFileService.upload(file, bizPath, request));
     }
 
